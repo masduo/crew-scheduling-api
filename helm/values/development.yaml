@@ -1,0 +1,7 @@
+deployment:
+  replicas: 2
+  aspnetcore_environment: development
+  pull_policy: IfNotPresent
+
+service:
+  port: 5000

@@ -1,0 +1,10 @@
+*
+!.stylecop/*
+!helm/*
+!src/*
+!tests.*
+**/obj
+**/bin
+**/.vs
+**/Properties
+**/appsettings.development.json

@@ -1,0 +1,11 @@
+{
+  "schedules": [
+    {
+      "id": "8c9bb00d-f7e6-4b9c-a1d2-85e30024cd84",
+      "pilotId": 2,
+      "departureDateTimeUtc": "2021-12-07T09:00:00Z",
+      "returnDateTimeUtc": "2021-12-07T11:00:00Z",
+      "createdAt": "2020-11-29T18:45:07.5596799Z"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+apiVersion: skaffold/v2alpha2
+kind: Config
+build:
+  artifacts:
+  - image: crewscheduling-api
+  tagPolicy:
+    sha256: {}
+deploy:
+  helm:
+    releases:
+    - name: crewscheduling-api
+      chartPath: helm
+      valuesFiles:
+      - helm/values/development.yaml
+      # - .env.skaffold.yaml
+      values:
+        image: crewscheduling-api

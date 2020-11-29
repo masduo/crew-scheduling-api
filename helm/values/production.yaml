@@ -1,0 +1,7 @@
+deployment:
+  replicas: 5
+  aspnetcore_environment: production
+  pull_policy: Always
+
+service:
+  port: 5000

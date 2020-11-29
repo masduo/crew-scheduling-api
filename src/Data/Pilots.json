@@ -1,0 +1,52 @@
+{
+  "pilots": [
+    {
+      "id": 1,
+      "name": "Andy",
+      "base": "Munich",
+      "workDays": ["Monday", "Tuesday", "Thursday", "Saturday"]
+    },
+    {
+      "id": 2,
+      "name": "Betty",
+      "base": "Munich",
+      "workDays": ["Monday", "Tuesday", "Wednesday", "Friday"]
+    },
+    {
+      "id": 3,
+      "name": "Callum",
+      "base": "Munich",
+      "workDays": ["Wednesday", "Thursday", "Saturday", "Sunday"]
+    },
+    {
+      "id": 4,
+      "name": "Daphne",
+      "base": "Munich",
+      "workDays": ["Friday", "Saturday", "Sunday"]
+    },
+    {
+      "id": 5,
+      "name": "Elvis",
+      "base": "Berlin",
+      "workDays": ["Monday", "Tuesday", "Thursday", "Saturday"]
+    },
+    {
+      "id": 6,
+      "name": "Freida",
+      "base": "Berlin",
+      "workDays": ["Monday", "Tuesday", "Wednesday", "Friday"]
+    },
+    {
+      "id": 7,
+      "name": "Greg",
+      "base": "Berlin",
+      "workDays": ["Wednesday", "Thursday", "Saturday", "Sunday"]
+    },
+    {
+      "id": 8,
+      "name": "Hermione",
+      "base": "Berlin",
+      "workDays": ["Friday", "Saturday", "Sunday"]
+    }
+  ]
+}

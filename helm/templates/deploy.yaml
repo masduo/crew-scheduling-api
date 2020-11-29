@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.image }}
+        imagePullPolicy: {{ .Values.deployment.pull_policy }}
+        readinessProbe:
+          httpGet:
+            path: /healthcheck?readiness
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: /healthcheck?liveness
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 60
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: {{ .Values.deployment.aspnetcore_environment | quote }}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+      restartPolicy: Always
