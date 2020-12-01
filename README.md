@@ -11,15 +11,19 @@
 
 Crew Scheduling API (code name `crew-scheduling-api`) uses REST API design principles to provide two functions:
 
-- Read the pilot availabiliy for any given period, and
+- Query the next available pilot to schedule for the requested period.
 
-- Schedule a pilot for any given period.
+- Schedule a pilot for the requested period.
 
-### Notes/Assumptions:
+### Assumptions:
+
+- The load is distributed evenly between available pilots using the count of their current schedules.
+
+- The schedule endpoint re-checks the availability of the pilot before assigning them. But it does re-check the priority.
 
 - Dates are received, stored, and retrieved in UTC without any timezone conversion. The date are in ISO-8601 format which conforms with [RFC 3339](https://tools.ietf.org/html/rfc3339#section-5.6)
 
-Consult with the `/swagger` endpoint of the API for more details.
+- Please consult with `/swagger` endpoint for more details.
 
 # Run 🚀
 
@@ -100,29 +104,29 @@ Tests are also run in `Dockerfile` to stop faulty code being built into the API'
 
 ### Stylecop
 
-To enforce basic unobtrusive coding standards for consistency.
+Enforces basic unobtrusive coding standards for consistency of commits.
 
 ### Serilog
 
-To enable structured logging with templates, and to allow logging with different formats. Configurable for different environments via `appsettings<.env>.json`.
+Enables structured logging, and to allow logging with different configurations per environment.
 
-The API logs to console (stdout). Another service (fluentd or filebeat) will be required to harvest the logs files and transfer them to log stores (elasticsearch, splunk, etc.).
+The API logs to console (stdout). Another service (e.g. fluentd, filebeat) will be required to harvest the log files and ship them to log stores (e.g. Elasticsearch).
 
 ### MediatR
 
-To separate read models from write models, working towards CQRS (initially withou ES).
+Enables separation of query models and handlers (read the next available pilot) from commands models and handlers (schedule a pilot). This is a step towards implementing CQRS architectural pattern.
 
 ### Open API Specification (Swagger)
 
-To add live/auto-generated documentation to the API.
+Adds live/auto-generated documentation to the API endpoints.
 
 ### Docker and Docker Compose
 
-To enable building and running the API inside Docker.
+Enables containerisation of the API by building and running it inside Docker. Makes CI/CD a breeze.
 
-### Helm
+### Helm Chart
 
-To enable deploying the API to Kubernetes instance. There are two configuration available for development and production environments under `/helm/values/`.
+Enables deploying the API to Kubernetes instance. There are two configuration available for development and production environments under `/helm/values/`.
 
 Skaffold uses the development configuration to deploy locally.
 
@@ -138,15 +142,15 @@ script:
 
 ### Skaffold
 
-To deploy the API to Kubernetes insance running inside Docker Desktop.
+Deploys the API to Kubernetes insance running inside Docker Desktop. See [Run with Skaffold](#run-with-skaffold).
 
-### Versioning
+### API Versioning
 
-Add versioning via urls. `/v1/` is the current default version.
+Adds versioning via urls. `/v1/` is the current default version.
 
 ### DotNetEnv
 
-To sets environment variables for local development. Add a (_gitignored and dockerignored_) `.env` file to the root and write environemnt variables and secrets:
+Sets environment variables for local development. Add a (_gitignored and dockerignored_) `.env` file to the root and write environemnt variables and secrets:
 
 ```sh
 # to run with production configuration
@@ -157,18 +161,24 @@ SECRET=[redacted-secret]
 
 # `// todo: ...`
 
-- API Versioning could move to configuration, currently it is defaulted to `v1.0`.
+This is more of a POC and direction of the solution for the problem. Below are few  extension points I would pick next to iterate on:
 
-- The hypermedia links applied via `SharedModels.Links` is just to show the idea, it should be improved using HATEOAS libraries.
+- The source code (`./src`) can be broken down into multiple assemblies. The current folder structure tries to reflect what the assemblies would have been: `Stores` for reading and writing data, `Domain` for shared entities, `Handlers` for services.
 
-- The JSON DB files are prone to race condition and dirty reads if multiple read/write requests get issued to the server. Also since DB files exists per server, the API does not scale as it is. Migrating to a modern DB, or better management of file system with locking and unlocking would resolve this.
+- The hypermedia links used via `SharedModels.Links` should be improved using proper HATEOAS paradigms e.g. HAL.
 
-- JSON DBs could be cached at the server level or distributed. Any write to the file would trigger cache invalidation.
+- POST `/schedules` feature lacks tests. The controller integration tests, and model validation tests would be quite similar to GET `/availability` feature tests. Also there are not tests for `AvailabilityQueryHandler`. The logs must be tested as well.
 
-- Load Distribution: The schedules are prioritised based on the count of past and future schedules of available pilots. This can get smarter in many ways, e.g. the load should not take the whole history of schedules into account and instead should count schedules of a sliding recent period, or the load can be distributed based on the pilot's working days, so if a pilot works for only one day in week they should get more weigth, etc.
+- XML documentation is done on what is expose on API's specification (swagger), and some of the interfaces. Domain entities and the rest of the interfaces need to be documented as well.
 
-- XML documentation is done on what is expose on API's specification (swagger), and some of the interfaces. The domain entities and other interfaces need to be documented as well.
+- Currently the models and handlers for quries and commands are separated, but they both access the same DB files (`schedules.json`). Ideally the read DB can be separated out into an eventually consistent file, a denormalised view per se. Anytime that a command changes the state of system, it should then publish an event, e.g. via a message queue, and a separate process would consume it to update the view data.
 
-- The source code (`./src`) can be broken down to multiple assemblies in later iterations before going live. The current folder structure lends itself to that.
+- Numerous issues arise by using an auto-incremented integer data type for primary keys. The Id for the pilots should change to a less predictable value, e.g. a GUID.
 
-- POST schedules feature lacks tests, the integration and validation test would be similar to GET availability feature. The logs could be tested as well.
+- The JSON DB files are prone to race condition and dirty reads if multiple read/write requests get issued to the server. Also since DB files exists per server, the API does not scale as it stands. These must either migrate to a modern DB System, or the file system management must be improved to manage race condition.
+
+- Data for queries can be cached at the server level or in a distributed cache. Then any command that changes state should trigger a cache invalidation.
+
+- Load Distribution: The schedules are prioritised based on the count of past and future schedules of available pilots. This can get smarter. For example the load should not take the whole history of schedules into account and instead should count schedules of a sliding recent period. Or the load can be distributed based on the pilot's working days, so if a pilot works for only one day in week they should get more weigth, etc. Another way to tackle the efficiency of the algorithm is to allow revisit past distributions data and make informed decisions using those reports.
+
+Thanks for your time and consideration!
